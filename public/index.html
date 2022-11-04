@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>STARTER</title>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="./style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
+  <!-- if you need to import js scripts do it here -->
+</head>
+
+<body>
+  <!-- input color -->
+  <canvas class="webgl"></canvas>
+  <div class="container">
+    <div class="colorWrapper">
+      <label for="color" class="input-color-label">Color</label>
+      <div class="input-color-container">
+        <input id="color" value="#ed6868" class="input-color" type="color">
+      </div>
+      <div class="lines">
+        <label for="color">columns and lines</label>
+        <input type="text" id="columInput" placeholder="20 / 20">
+      </div>
+      <div class="oldColors">
+        <p>last colors</p>
+        <div class="oldColWrapper">
+        </div>
+      </div>
+      <a style="display: none;" href="#" class="btn" id="btn">Télécharge ton chef d'oeuvre</a>
+      <button id="btnDownload">Download</button>
+    </div>
+    <div class="refimgContainer"></div>
+    <div class="refImg">
+      <input type="file" id="file" class="custom-file-input" accept="image/*">
+
+      <p style="color: #fff;">refImg opacity</p>
+      <input type="range" min="0" max="1" step="0.1" id="range">
+    </div>
+  </div>
+  <!-- WEBPACK will inject the bundle.js here -->
+</body>
+
+</html>
