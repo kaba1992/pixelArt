@@ -1,11 +1,8 @@
 // IMPORTS
 
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-import { Perlin } from 'three-noise';
 import OrbitControls from 'threejs-orbit-controls';
-import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
-import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+
 
 
 
@@ -15,7 +12,6 @@ let mixer, clock
 clock = new THREE.Clock();
 const canvas = document.querySelector('canvas.webgl')
 canvas.getContext("experimental-webgl", { preserveDrawingBuffer: true });
-const perlin = new Perlin(Math.random())
 const scene = new THREE.Scene();
 
 const sizes = {
@@ -44,6 +40,8 @@ window.addEventListener('resize', () => {
   camera.aspect = sizes.width / sizes.height
   camera.updateProjectionMatrix()
 
+  // cover(refImg, camera.aspect);
+
   // Update renderer
   renderer.setSize(sizes.width, sizes.height)
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
@@ -62,23 +60,10 @@ controls.rotateSpeed = 0.5;
 controls.maxDistance = 1500;
 controls.minDistance = 0;
 
-// MODELS
-
-const loaderCube = new THREE.CubeTextureLoader();
-loaderCube.setPath('assets/textures/cube/');
-const textureCube = loaderCube.load([
-  'px.png', 'nx.png',
-  'py.png', 'ny.png',
-  'pz.png', 'nz.png'
-]);
 
 
 
 
-// LIGHTS
-
-const light = new THREE.DirectionalLight(0xFFFFFF);
-const ambientLight = new THREE.AmbientLight(0x404040);
 
 const debounce = (func, delay) => {
   let debounceTimer
@@ -96,10 +81,11 @@ const color = document.getElementById('color');
 
 const columnInput = document.getElementById('columInput');
 const range = document.getElementById('range');
+const rangeValue = document.getElementById('rangeValue');
 
 
 let colums = 20;
-let refimgContainer = document.querySelector('.refimgContainer');
+
 
 const texture = new THREE.TextureLoader()
 let refImg  // load image
@@ -117,29 +103,44 @@ function handleImage(e) {
     let img = new Image();
     img.src = event.target.result;
     refImg = texture.load(`${event.target.result} `);
+
+    // refImg.matrixAutoUpdate = false;
+
+
+
     refImg.flipY = false;
     planeMesh.material = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide, map: refImg, visible: true, transparent: true });
     range.addEventListener('input', debounce((e) => {
       planeMesh.material.opacity = e.target.value;
-      console.log(e.target.value);
+      rangeValue.innerHTML = e.target.value;
+
     }, 250));
-    console.log(refImg);
-    // refimgContainer.style.background = "url(" + event.target.result + ")";
-    // refimgContainer.style.backgroundSize = "cover";
-    // refimgContainer.style.backgroundPosition = "center";
-    // refimgContainer.style.backgroundRepeat = "no-repeat";
     console.log(event.target.result);
   }
   reader.readAsDataURL(e.target.files[0]);
 }
 
+// function cover(texture,aspect) {
+//   let imageAspect = texture.image.width / texture.image.height;
+
+// 	if ( aspect < imageAspect ) {
+
+// 			texture.matrix.setUvTransform( 0, 0, aspect / imageAspect, 1, 0, 0.5, 0.5 );
+
+// 	} else {
+
+// 			texture.matrix.setUvTransform( 0, 0, 1, imageAspect / aspect, 0, 0.5, 0.5 );
+
+// 	}
+
+// }
+
 // set grid dimensions
 columnInput.addEventListener('input', inputValue);
 function inputValue(e) {
-  colums = e.target.value;
+  // colums = e.target.value % 2 === 0 ? e.target.value : parseInt(e.target.value) + 1;
 
-  // refimgContainer.style.width = colums * 30.5 + "px";
-  // refimgContainer.style.height = colums * 30.5 + "px";
+  colums = e.target.value;
 
   // destroy all highlightsMeshCloen contening in objects array
   objects.forEach((object) => {
@@ -153,12 +154,15 @@ function inputValue(e) {
   scene.remove(planeMesh);
   scene.remove(grid);
   // create new grid and planeMesh
-  planeMesh.geometry = new THREE.PlaneGeometry(colums, colums);
-  grid = new THREE.GridHelper(colums, colums);
-  grid.rotateX(Math.PI / 2);
-  grid.position.z = 0.1;
-  scene.add(grid);
-  scene.add(planeMesh);
+  setTimeout(() => {
+    planeMesh.geometry = new THREE.PlaneGeometry(colums, colums);
+    grid = new THREE.GridHelper(colums, colums);
+    grid.rotateX(Math.PI / 2);
+    grid.position.z = 0.1;
+    scene.add(grid);
+    scene.add(planeMesh);
+  }, 250);
+  console.log(planeMesh);
 
 }
 
@@ -212,7 +216,7 @@ const planeMesh = new THREE.Mesh(
 );
 planeMesh.rotateX(Math.PI);
 scene.add(planeMesh);
-
+// console.log(planeMesh);
 
 // Grid
 
@@ -220,6 +224,7 @@ let grid = new THREE.GridHelper(colums, colums);
 grid.rotateX(Math.PI / 2);
 grid.position.z = 0.1;
 scene.add(grid);
+// console.log(grid);
 
 // HighLightMesh
 const highlightMesh = new THREE.Mesh(
@@ -249,7 +254,6 @@ window.addEventListener('mousemove', function (e) {
   intersects = raycaster.intersectObject(planeMesh);
   if (intersects.length > 0) {
     const highlightPos = new THREE.Vector3().copy(intersects[0].point).floor().addScalar(0.5);
-    // console.log(intersects[0].point.floor());
     highlightMesh.position.set(highlightPos.x, highlightPos.y, 0);
   }
 });
@@ -257,6 +261,8 @@ window.addEventListener('mousemove', function (e) {
 const objects = [];
 
 // clone highlightMesh and add it to the scene and objects array
+let mousemove = true;
+let mouseDown = false;
 
 window.addEventListener('mousedown', function () {
   const objectExist = objects.find(function (object) {
@@ -270,14 +276,42 @@ window.addEventListener('mousedown', function () {
       highLightClone.material = highlightMesh.material.clone();
       scene.add(highLightClone);
       objects.push(highLightClone);
-      columnInput.removeEventListener('focus', (e) => { })
     }
+
   }
   else {
-    scene.remove(objectExist);
-    objects.splice(objects.indexOf(objectExist), 1);
+    objectExist.material.color.set(highLightColor);
+    console.log("objectExist");
   }
   console.log(scene.children.length);
+  mouseDown = true;
+  window.addEventListener('mousemove', OnMouseMove);
+
+
+});
+
+function OnMouseMove() {
+  if (mouseDown) {
+    const objectExist = objects.find(function (object) {
+      return (object.position.x === highlightMesh.position.x)
+        && (object.position.y === highlightMesh.position.y)
+    });
+    if (!objectExist) {
+      if (intersects.length > 0) {
+        const highLightClone = highlightMesh.clone();
+        highLightClone.material = highlightMesh.material.clone();
+        scene.add(highLightClone);
+        objects.push(highLightClone);
+      }
+    }
+    else {
+      objectExist.material.color.set(highLightColor);
+    }
+  }
+}
+window.addEventListener('mouseup', function () {
+  window.removeEventListener('mousemove', OnMouseMove);
+  mouseDown = false;
 });
 
 // screen shot
@@ -306,13 +340,8 @@ function animate(dt) {
   renderer.render(scene, camera);
   controls.update();
 
-  renderer.antialias = true;
   renderer.setClearColor(0xffffff, 0);
   renderer.setPixelRatio(window.devicePixelRatio);
-
-
-  const delta = clock.getDelta();
-  if (mixer) mixer.update(delta);
 
   requestAnimationFrame(animate);
 }

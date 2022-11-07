@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html>
-
 <head>
   <title>STARTER</title>
   <meta charset="utf-8">
@@ -16,7 +15,7 @@
     <div class="colorWrapper">
       <label for="color" class="input-color-label">Color</label>
       <div class="input-color-container">
-        <input id="color" value="#ed6868" class="input-color" type="color">
+        <input id="color" value="#ffffff" class="input-color" type="color">
       </div>
       <div class="lines">
         <label for="color">columns and lines</label>
@@ -35,7 +34,8 @@
       <input type="file" id="file" class="custom-file-input" accept="image/*">
 
       <p style="color: #fff;">refImg opacity</p>
-      <input type="range" min="0" max="1" step="0.1" id="range">
+      <input type="range" min="0" max="1" step="0.01" id="range" class="slider">
+        <span id="rangeValue"></span>
     </div>
   </div>
   <!-- WEBPACK will inject the bundle.js here -->
