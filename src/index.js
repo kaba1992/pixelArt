@@ -265,27 +265,11 @@ let mousemove = true;
 let mouseDown = false;
 
 window.addEventListener('mousedown', function () {
-  const objectExist = objects.find(function (object) {
-    return (object.position.x === highlightMesh.position.x)
-      && (object.position.y === highlightMesh.position.y)
-  });
 
-  if (!objectExist) {
-    if (intersects.length > 0) {
-      const highLightClone = highlightMesh.clone();
-      highLightClone.material = highlightMesh.material.clone();
-      scene.add(highLightClone);
-      objects.push(highLightClone);
-    }
-
-  }
-  else {
-    objectExist.material.color.set(highLightColor);
-    console.log("objectExist");
-  }
-  console.log(scene.children.length);
   mouseDown = true;
+  OnMouseMove()
   window.addEventListener('mousemove', OnMouseMove);
+  console.log(scene.children.length);
 
 
 });
