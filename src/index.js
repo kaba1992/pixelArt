@@ -90,7 +90,27 @@ let colums = 20;
 const texture = new THREE.TextureLoader()
 let refImg  // load image
 
+// Editors
+const drawBtn = document.querySelector('.draw');
+const deleteBtn = document.querySelector('.delete');
+let isDrawing = false;
+let isDeleting = false;
 
+drawBtn.addEventListener('click', () => {
+  isDrawing = true;
+  isDeleting = false;
+  document.body.style.cursor = 'url(./assets/images/brush-cursor.png)4 12, auto';
+  highlightMesh.visible = true;
+
+
+});
+deleteBtn.addEventListener('click', () => {
+  isDrawing = false;
+  isDeleting = true;
+  document.body.style.cursor = 'url(./assets/images/eraser-cursor.png)4 12, auto';
+  highlightMesh.visible = false;
+
+});
 
 
 
@@ -148,6 +168,8 @@ function inputValue(e) {
     object.material.dispose();
     scene.remove(object);
   });
+  // clear objects array
+  objects = [];
   //destroy planeMesh and remove grid
   planeMesh.geometry.dispose();
   planeMesh.material.dispose();
@@ -258,8 +280,8 @@ window.addEventListener('mousemove', function (e) {
   }
 });
 
-const objects = [];
-
+let objects = [];
+console.log(objects);
 // clone highlightMesh and add it to the scene and objects array
 let mousemove = true;
 let mouseDown = false;
@@ -274,25 +296,56 @@ window.addEventListener('mousedown', function () {
 
 });
 
+
 function OnMouseMove() {
+
+  const objectExist = objects.find(function (object) {
+    return (object.position.x === highlightMesh.position.x)
+      && (object.position.y === highlightMesh.position.y)
+  });
   if (mouseDown) {
-    const objectExist = objects.find(function (object) {
-      return (object.position.x === highlightMesh.position.x)
-        && (object.position.y === highlightMesh.position.y)
-    });
-    if (!objectExist) {
-      if (intersects.length > 0) {
-        const highLightClone = highlightMesh.clone();
-        highLightClone.material = highlightMesh.material.clone();
-        scene.add(highLightClone);
-        objects.push(highLightClone);
-      }
+
+    if (!objectExist && isDrawing) {
+      drawing();
     }
-    else {
-      objectExist.material.color.set(highLightColor);
+    else  {
+      deleting();
+      if (isDrawing) {
+        objectExist.material.color.set(highLightColor);
+    
+      }
     }
   }
 }
+function drawing() {
+
+  if (intersects.length > 0) {
+    const highLightClone = highlightMesh.clone();
+    highLightClone.material = highlightMesh.material.clone();
+    scene.add(highLightClone);
+    objects.push(highLightClone);
+
+  }
+}
+
+
+function deleting() {
+  if (isDeleting) {
+    objects.forEach((object, index) => {
+      if ((object.position.x === highlightMesh.position.x)
+        && (object.position.y === highlightMesh.position.y)) {
+        object.geometry.dispose();
+        object.material.dispose();
+        scene.remove(object);
+        objects.splice(index, 1);
+      }
+    
+    });
+  }
+
+}
+
+
 window.addEventListener('mouseup', function () {
   window.removeEventListener('mousemove', OnMouseMove);
   mouseDown = false;
@@ -314,7 +367,7 @@ btnDownload.addEventListener('click', function (e) {
     grid.visible = true;
     planeMesh.visible = true;
     highlightMesh.visible = true;
-  }, 250);
+  }, 500);
 });
 
 
@@ -330,4 +383,3 @@ function animate(dt) {
   requestAnimationFrame(animate);
 }
 animate();
-
